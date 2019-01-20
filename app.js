@@ -2,6 +2,9 @@ var express = require('express');
 var mongoose = require('mongoose');
 var bodyParser = require('body-parser'); 
 var app = express();
+/*
+* RUTAS 
+*/ 
 var routeUsuario = require('./routes/usuario');
 var routeMedico = require('./routes/medico');
 var routeHospital = require('./routes/hospital');
@@ -9,6 +12,7 @@ var routeBusqueda = require('./routes/busqueda');
 var routeIndex = require('./routes/index');
 var uploadsRoute = require('./routes/upload');
 var imgRoute = require('./routes/imagenes');
+var loginRoute = require('./routes/login');
 //Conexion
 mongoose.connect('mongodb://localhost:27017/Hospital', (err, res) => {
     if( err ){
@@ -25,6 +29,7 @@ app.use(bodyParser.json());
 //Midlewares
 app.use( express.urlencoded({ extended: false }) );
 //Rutas
+app.use('/login', loginRoute);
 app.use('/img', imgRoute);
 app.use('/uploads', uploadsRoute);
 app.use('/busqueda', routeBusqueda );

@@ -137,48 +137,5 @@ router.delete('/:id', (req, res) => {
 
     });
 });
-router.post('/login', (req, res) => {
-    let body = req.body;
 
-    if( !body ){
-        return res.status(400)
-        .json({
-            ok:false,
-            message: 'Ingresa los parametros'
-        })
-    }
-
-    Usuario.findOne({ email: body.email }, (err, usuarioDB) => {
-        if( err ){
-            return res.status(500)
-            .json({
-                ok: false,
-                err
-            })
-        }
-        if( !usuarioDB ){
-            return res.status(400)
-            .json({
-                ok: false,
-                message: 'Contraseña o usuario incorrecto'
-            })
-        }
-        
-        //CRear Token
-        let token = jwt.sign({ usuario: usuarioDB }, 'Bzcocho-17-03',{ expiresIn: 14000 });        
-        if( bcrypt.compareSync( body.pass, usuarioDB.pass ) ){
-            return res.json({
-                ok:true,
-                usuario: usuarioDB,
-                token
-            })
-        }else{
-            return res.status(500)
-            .json({
-                ok:false,
-                message: 'Contraseña o usuario incorrecto'
-            })
-        }
-    });
-});
 module.exports = router;
