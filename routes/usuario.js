@@ -5,13 +5,40 @@ let jwt = require('jsonwebtoken');
 const SEED = require('../condig/config').SEED;
 let { verificaToken } = require('../middlewares/middleware');
 
-router.get( '/usuario', (req, res) => {
+router.get( '/', (req, res) => {
+    let desde = req.query.desde || 0;
+    desde = Number( desde );        
+    let cantidad = 0;
+    let pagina = desde/5;
+    //Validar que sea un numero
+    if( isNaN(desde) ){
+        return res.status(400)
+        .json({
+            ok: false,
+            message: 'El parametro no es valido, ingrese un numero'
+        })
+    } 
+    //Asignar la cantidad de documentos o registros
+    Usuario.count({}, (err, count) => {
+        cantidad = count || err;  
+    })
+    if( desde === 0 ){
+        pagina = 1;
+    }
     Usuario.find({}, 'nombre email img role')
+        .skip(desde)
+        .limit(5)
         .exec((err, data) => {
             if(err){
                 return res.json({err})
             }
-            res.json( { ok: true, usuarios: data } );
+            res.json({ 
+                ok: true, 
+                usuarios: data, 
+                total:cantidad, 
+                cantidad: 5,
+                pagina
+            });
         if( !res ){
             return res.status(500)
             .json({
@@ -21,14 +48,14 @@ router.get( '/usuario', (req, res) => {
         }
         });
 });
-router.post('/usuario', verificaToken, (req, res) => {
+router.post('/', verificaToken, (req, res) => {
     let body = req.body;
 
     let usuarioN = new Usuario({
         nombre: body.nombre,
         email: body.email,
         pass: bcrypt.hashSync(body.pass, 10),        
-        img: body.img
+        imgpath: body.img
     });
 
     usuarioN.save( (err, usuarioDB) => {
@@ -43,7 +70,7 @@ router.post('/usuario', verificaToken, (req, res) => {
         })
     });
 });
-router.put('/usuario', (req, res) => {
+router.put('/', (req, res) => {
   let id = req.body.id;
   let body = req.body;
     
@@ -86,7 +113,7 @@ router.put('/usuario', (req, res) => {
   })
 });
 router.delete('/:id', (req, res) => {
-    let id = req.params.id;
+    let id = req.query.id;
     
     Usuario.findByIdAndRemove(id, (err, userDeleted) =>{
         if(err){
